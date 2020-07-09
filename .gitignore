@@ -1,10 +1,7 @@
-<<<<<<< HEAD
 # specific files
 .vscode/
 dataset/
 
-=======
->>>>>>> 27d9b1e0844c1662ec1a71d2c971c3bde6ea0b23
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -133,8 +130,5 @@ venv.bak/
 dmypy.json
 
 # Pyre type checker
-<<<<<<< HEAD
+# <<<<<<< HEAD
 .pyre/
-=======
-.pyre/
->>>>>>> 27d9b1e0844c1662ec1a71d2c971c3bde6ea0b23
