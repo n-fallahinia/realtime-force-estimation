@@ -9,12 +9,13 @@ from __future__ import print_function
 import glob 
 import os  
 import sys
+from pathlib import Path
 import numpy as np
 from sklearn.model_selection import train_test_split
 from PIL import Image  
 import PIL 
 
-def lead_train_withRnd(subNum ,load_force = True, raw_images = False, train_ratio = 0.8):
+def load_train_withRnd(subNum ,load_force = True, raw_images = False, train_ratio = 0.8):
     """
     load the training dataset from images in subject folders and store them 
     in the train folder with random number of subIdx
@@ -27,10 +28,10 @@ def lead_train_withRnd(subNum ,load_force = True, raw_images = False, train_rati
     """
     subjIdx_list = np.random.choice(range(17), subNum, replace=False)
     print('Subjects that are selected: %s' % subjIdx_list)
-    # lead_train_withIdx(subjIdx_list)
+    load_train_withIdx(subjIdx_list)
     
 
-def lead_train_withIdx(subjIdx_list, load_force = True, raw_images = False, train_ratio = 0.8):
+def load_train_withIdx(subjIdx_list, load_force = True, raw_images = False, train_ratio = 0.8):
     """
     load the training dataset from images in subject folders and store them 
     in the train folder
@@ -46,7 +47,25 @@ def lead_train_withIdx(subjIdx_list, load_force = True, raw_images = False, trai
     image_lists = []
     data_params = {} # might not be used
     force_lists = np.zeros((1,3))
-    print('Datat Processing started ... ')
+    print('Data Processing started ... ')
+
+    if (len(os.listdir(train_path+'/forces/')) != 0):
+        print('\tDeleting old train forces!')
+        train_force2rem = Path(train_path+'/forces/force.txt')
+        train_force2rem.unlink()
+    if (len(os.listdir(train_path+'/image/')) != 0):
+        print('\tDeleting old train images!')
+        train_image2rem = glob.glob((train_path+'/image/*.jpg'))
+        [os.remove(image2rem) for image2rem in train_image2rem] 
+
+    if (len(os.listdir(test_path+'/forces/')) != 0):
+        print('\tDeleting old test forces')
+        test_force2rem = Path(test_path+'/forces/force.txt')
+        test_force2rem.unlink()
+    if (len(os.listdir(test_path+'/image/')) != 0):
+        print('\tDeleting old test images!')
+        test_image2rem = glob.glob((test_path+'/image/*.jpg'))
+        [os.remove(image2rem) for image2rem in test_image2rem] 
 
     for subIdx in subjIdx_list:
         subj_path = dataset_path+'subj_'+f'{subIdx:02d}'
@@ -77,7 +96,6 @@ def lead_train_withIdx(subjIdx_list, load_force = True, raw_images = False, trai
                 . format(len(data_to_write[0]), len(data_to_write[1]))) 
     # data write part 
     write_data(data_to_write, train_path, test_path)
-
 
 def load_force_txt(force_path, force_num, force_dim = 3):
     """ read force from a txt file """
@@ -143,5 +161,5 @@ def write_data(data_to_write, train_path, test_path):
 # if __debug__:
 #     print('debug')
 #     subjIdx_list = [1,3,5]
-#     lead_train_withRnd(5)
-#     lead_train_withIdx(subjIdx_list)
+#     # lead_train_withRnd(5)
+#     load_train_withIdx(subjIdx_list)
