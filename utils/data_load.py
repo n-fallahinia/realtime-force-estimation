@@ -1,35 +1,85 @@
-# things to remember:
+# Load functions for prepairing the training data before
+# feeding into the training session. Data can be load directly
+# from the entire train set or can be iteraitively be loaded
+# from the coss-validation folds.
+
+# Navid Fallahinia - 06/16/2020
+# BioRobotics Lab
+# ===============================================================
+
+
+from __future__ import print_function
+from data_util import *
+
 import glob
 import os
+import sys
+from pathlib import Path
+import numpy as np
 import tensorflow as tf
 
-train_path = 'dataset/train/'
-train_list = glob.glob(train_path+"*")
-train_images_list = glob.glob(train_path+"images/*")
-train_ds = tf.data.Dataset.list_files(train_images_list)
-a = train_ds.take(0)
+def load_dataset(data_path, IMG_WIDTH=224, IMG_HEIGHT=224, num_threads = 5):
+    """
+    creating a tf dataset pipeline that will be used later for 
+    data augmutation and training the model
 
-# #data augmentation function
-# IMG_WIDTH=224
-# IMG_HEIGHT=224
-# def decode_img(img):
-#   img = tf.image.decode_jpeg(img, channels=3)
-#   img = tf.image.convert_image_dtype(img, tf.float32) 
-#   img = tf.image.resize(img, [IMG_WIDTH, IMG_HEIGHT]) 
-#   img = tf.image.random_flip_left_right(img)
-#   img = tf.image.random_flip_up_down(img)
-#   img = tf.image.random_brightness(img, 0.3)
-#   return img
+    Inputs:
+    - train_path: path to the training images
+    """
+    if os.path.isfile(data_path):
+        print('%s does not exists '% data_path)
+        return
+    image_path = data_path + 'image/'
+    force_path = data_path + 'forces/force.txt'
 
-# def get_label(path):
-#   part_list = tf.strings.split(path, "/")
-#   # in the case where each class of images is in one folder
-#   return part_list[-2] == class_names
+    images_list = glob.glob(image_path + '*.jpg')
+    force_list = load_force_txt(force_path,len(images_list))
 
-# def process_path(file_path):
-#   label = get_label(file_path)
-#   img = tf.io.read_file(file_path)
-#   img = decode_img(img)
-#   return img, label
+    dataset = tf.data.Dataset.from_tensor_slices((images_list,force_list))
+    if len(images_list) == 0:
+        print('No images at this directory %s'% image_path)
+        return
+    print('*****************************')
+    print('Dataset is built by %d images'% len(images_list))
+    
 
-print(a)
+    dataset = dataset.map(preprocess_data, num_parallel_calls=num_threads)
+    dataset = dataset.shuffle(buffer_size=len(images_list))
+
+def preprocess_data(image, force, WIDTH = 224, HEIGHT = 224 ):
+    """ preprocessing images """   
+
+    image = load_image(image, WIDTH, HEIGHT)
+    image = augment_image(image)
+
+    return image, force
+
+def load_image(image, width, height):
+
+    image = tf.image.decode_jpeg(image, channels=3)
+    image = tf.image.convert_image_dtype(image, tf.float32) 
+    image = tf.image.resize(image, [width, height]) 
+
+    return image
+
+def augment_image(image, FLIP_FLAG = False, COLOR_FLAG = False):
+    
+    if FLIP_FLAG:
+        image = tf.image.random_flip_left_right(image)
+        image = tf.image.random_flip_up_down(image)
+
+    if COLOR_FLAG:
+        image = tf.image.random_brightness(image, max_delta=32.0 / 255.0)
+        image = tf.image.random_contrast(image, lower=0.5, upper=1.5)
+
+    image = tf.clip_by_value(image, 0.0, 1.0)
+
+    return image
+
+
+
+
+if __debug__:
+    print('DEBUG')
+    train_path = 'dataset/test/' # Will be an arg in the data_load() function as a parser
+    load_dataset(train_path)

@@ -98,7 +98,7 @@ def train_image_show(img_num=15):
     plt.show()
 
 
-if __debug__:
-    print('debug')
-    sub_Idx = 5
-    train_image_show()
+# if __debug__:
+#     print('debug')
+#     sub_Idx = 5
+#     train_image_show()

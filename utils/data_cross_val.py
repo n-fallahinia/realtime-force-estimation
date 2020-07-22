@@ -87,7 +87,7 @@ def fold_chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
-if __debug__:
-    print('DEBUG')
-    K_folds = 5
-    k_fold_split(K_folds)
+# if __debug__:
+#     print('DEBUG')
+#     K_folds = 5
+#     k_fold_split(K_folds)
