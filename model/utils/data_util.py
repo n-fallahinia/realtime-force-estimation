@@ -4,14 +4,12 @@ Navid Fallahinia - 06/16/2020
 BioRobotics Lab
 """
 
-from __future__ import print_function
-
 import glob 
 import os  
 import sys
 from pathlib import Path
 import numpy as np
-from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import train_test_split
 from PIL import Image  
 import PIL 
 
@@ -161,5 +159,5 @@ def write_data(data_to_write, train_path, test_path):
 # if __debug__:
 #     print('debug')
 #     subjIdx_list = [1,3,5]
-#     # lead_train_withRnd(5)
+# #     # lead_train_withRnd(5)
 #     load_train_withIdx(subjIdx_list)
