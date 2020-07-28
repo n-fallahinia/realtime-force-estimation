@@ -1,5 +1,6 @@
 
 from model.input_fn import *
+from model.model_fn import *
 from model.utils.utils import Params
 
 if __debug__:
@@ -19,10 +20,13 @@ if __debug__:
 
     images_list = glob.glob(image_path + '*.jpg')
     force_list = load_force_txt(force_path,len(images_list))
+    image_size = (224, 224 ,3)
 
     print('*****************************')
     print('Dataset is built by %d images'% len(images_list))
 
 
     # input_fn(True, images_list, force_list, params= params)
+    mode = 'train'
+    model_spec = model_fn(mode, params)
     print('*****************************')

@@ -64,7 +64,7 @@ def buil_model(is_training, image_size, params, classes = 3):
     return model
 
 
-def model_fn(model, mode, params, reuse=False):
+def model_fn(mode, params, reuse=False):
     """Model function defining the graph operations.
     Args:
         mode: (string) can be 'train' or 'eval'
@@ -80,34 +80,40 @@ def model_fn(model, mode, params, reuse=False):
     # MODEL:
     # Compute the output distribution of the model and the predictions
     model = buil_model(is_training, image_size, params)
+    print('\t [INFO] Final model is loaded ...')
+    # TODO add Prediction: prediction = model(x, training=False)
     # Define loss and accuracy
     loss_object = tf.keras.losses.MeanSquaredError(reduction=tf.keras.losses.Reduction.NONE)
 
     # Define training step that minimizes the loss with the Adam optimizer
     if is_training:
-        opt = tf.keras.optimizers.RMSprop(lr=params.learning_rate, momentum=params.bn_momentum)
-    # -----------------------------------------------------------
+        if params.adam_opt:
+            opt = tf.keras.optimizers.Adam(learning_rate=params.learning_rate)
+        else:
+            opt = tf.keras.optimizers.RMSprop(lr=params.learning_rate, momentum=params.bn_momentum)
+      # -----------------------------------------------------------
     # METRICS AND SUMMARIES
     metrics = {
         'train_loss' : tf.keras.metrics.MeanSquaredError(name='train_loss'),
         'train_accuracy' : tf.keras.metrics.RootMeanSquaredError(name='train_accuracy'),
 
         'test_loss' : tf.keras.metrics.MeanSquaredError(name='test_loss'),
-        'test_accuracy' :tf.keras.metrics.RootMeanSquaredError(name='test_accuracy'),
+        'test_accuracy' :tf.keras.metrics.RootMeanSquaredError(name='test_accuracy')
     }
 
-    # Summaries for training
-    tf.summary.scalar('loss', loss)
-    tf.summary.scalar('accuracy', accuracy)
+    # TODO Summaries for training
+    # tf.summary.scalar('loss', loss)
+    # tf.summary.scalar('accuracy', accuracy)
 
     # -----------------------------------------------------------
     # MODEL SPECIFICATION
     # Create the model specification and return it
     # It contains nodes or operations in the graph that will be used for training and evaluation
+    model_spec = {}
+    model_spec['loss'] = loss_object
+    model_spec['opt'] = opt
+    model_spec['metrics'] = metrics
+    model_spec['model'] = model
+    # TODO add summary merge for model_spec
 
-    model_spec['loss'] = loss
-    model_spec['accuracy'] = accuracy
-    """
-    TODO
-    """
     return model_spec

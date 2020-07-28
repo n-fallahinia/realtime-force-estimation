@@ -5,8 +5,12 @@
     "num_epochs": 10,
 
     "num_channels": 16,
-    "use_batch_norm": true,
+    "use_batch_norm": false,
     "bn_momentum": 0.9,
+    "use_dropout": true,
+    "predic_layer_size": 1024,
+    "use_tanh": false,
+    "adam_opt": false,
 
     "image_size": 224,
     "use_random_flip": true,
