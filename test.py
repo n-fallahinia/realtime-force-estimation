@@ -1,6 +1,7 @@
 
 from model.input_fn import *
 from model.model_fn import *
+from model.training import *
 from model.utils.utils import Params
 
 if __debug__:
@@ -28,5 +29,9 @@ if __debug__:
 
     # input_fn(True, images_list, force_list, params= params)
     mode = 'train'
-    model_spec = model_fn(mode, params)
+    model_spec = model_fn(mode, params)    
     print('*****************************')
+
+    log_dir = './logs/'
+
+    training_and_eval(model_spec, log_dir, params)

@@ -27,7 +27,8 @@ def buil_model(is_training, image_size, params, classes = 3):
     base_model = tf.keras.applications.MobileNetV2(input_shape=IMG_SHAPE,
                                                 include_top=False,
                                                 weights='imagenet')
-    print('\t [INFO] Base model is loaded ...')
+    print("[INFO] creating model...")
+    print('[INFO] Base model is loaded ...')
     # -----------------------------------------------------------
     # MODEL: define the layers of the model
     # Show a summary of the model. Check the number of trainable parameters
@@ -80,7 +81,7 @@ def model_fn(mode, params, reuse=False):
     # MODEL:
     # Compute the output distribution of the model and the predictions
     model = buil_model(is_training, image_size, params)
-    print('\t [INFO] Final model is loaded ...')
+    print('[INFO] Final model is loaded ...')
     # TODO add Prediction: prediction = model(x, training=False)
     # Define loss and accuracy
     loss_object = tf.keras.losses.MeanSquaredError(reduction=tf.keras.losses.Reduction.NONE)
@@ -91,7 +92,7 @@ def model_fn(mode, params, reuse=False):
             opt = tf.keras.optimizers.Adam(learning_rate=params.learning_rate)
         else:
             opt = tf.keras.optimizers.RMSprop(lr=params.learning_rate, momentum=params.bn_momentum)
-      # -----------------------------------------------------------
+     # -----------------------------------------------------------
     # METRICS AND SUMMARIES
     metrics = {
         'train_loss' : tf.keras.metrics.MeanSquaredError(name='train_loss'),
@@ -100,11 +101,6 @@ def model_fn(mode, params, reuse=False):
         'test_loss' : tf.keras.metrics.MeanSquaredError(name='test_loss'),
         'test_accuracy' :tf.keras.metrics.RootMeanSquaredError(name='test_accuracy')
     }
-
-    # TODO Summaries for training
-    # tf.summary.scalar('loss', loss)
-    # tf.summary.scalar('accuracy', accuracy)
-
     # -----------------------------------------------------------
     # MODEL SPECIFICATION
     # Create the model specification and return it
@@ -114,6 +110,5 @@ def model_fn(mode, params, reuse=False):
     model_spec['opt'] = opt
     model_spec['metrics'] = metrics
     model_spec['model'] = model
-    # TODO add summary merge for model_spec
 
     return model_spec
