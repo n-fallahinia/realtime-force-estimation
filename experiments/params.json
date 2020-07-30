@@ -2,7 +2,7 @@
 {
     "learning_rate": 1e-3,
     "batch_size": 32,
-    "num_epochs": 10,
+    "num_epochs": 5,
     "train_size": 300,
 
     "num_channels": 16,
@@ -14,7 +14,7 @@
     "adam_opt": false,
 
     "image_size": 224,
-    "use_random_flip": true,
+    "use_random_flip": false,
     "use_random_color": false,
     "num_labels": 6,
 

@@ -23,15 +23,19 @@ if __debug__:
     force_list = load_force_txt(force_path,len(images_list))
     image_size = (224, 224 ,3)
 
-    print('*****************************')
+    print('=================================================')
     print('Dataset is built by %d images'% len(images_list))
 
+    # tf.debugging.set_log_device_placement(True)
+    # train_dataset = input_fn(True, images_list, force_list, params= params)
 
-    # input_fn(True, images_list, force_list, params= params)
-    mode = 'train'
-    model_spec = model_fn(mode, params)    
-    print('*****************************')
+    print('=================================================')
 
+    with tf.device('/CPU:0'):
+        mode = 'train'
+        model_spec = model_fn(mode, params) 
+
+    print('=================================================')
+   
     log_dir = './logs/'
-
-    training_and_eval(model_spec, log_dir, params)
+    training_and_eval(model_spec, log_dir, params, train_dataset)

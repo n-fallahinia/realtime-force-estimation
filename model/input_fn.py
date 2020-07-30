@@ -6,15 +6,17 @@ from model.utils.data_util import *
 def preprocess_data(image, force, size, use_random_flip, use_random_color):
     """ preprocessing images """   
 
-    image = load_image(image, size)
+    image_string = tf.io.read_file(image)
+    image = load_image(image_string, size)
     image = augment_image(image, use_random_flip, use_random_color)
 
     return image, force
 
-def load_image(image, size):
+
+def load_image(image_string, size):
     """ decoding the images """   
 
-    image = tf.image.decode_jpeg(image, channels=3)
+    image = tf.image.decode_jpeg(image_string, channels=3)
     image = tf.image.convert_image_dtype(image, tf.float32) 
     image = tf.image.resize(image, [size, size]) 
 
