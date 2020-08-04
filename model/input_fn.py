@@ -57,7 +57,7 @@ def input_fn(is_training, filenames, labels, params = None):
         dataset = (tf.data.Dataset.from_tensor_slices((filenames, labels))
         .shuffle(buffer_size = num_samples)  # whole dataset into the buffer ensures good shuffling
         .map(preproc_train_fn, num_parallel_calls=params.num_parallel_calls)
-        .batch(params.batch_size)
+        .batch(params.batch_size).repeat()
         .prefetch(tf.data.experimental.AUTOTUNE)  # make sure you always have one batch ready to serve (can also use one 1)
     )
     else:
