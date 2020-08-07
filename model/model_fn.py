@@ -84,7 +84,7 @@ def model_fn(mode, params, reuse=False):
     print('[INFO] Final model is loaded ...')
     # TODO add Prediction: prediction = model(x, training=False)
     # Define loss and accuracy
-    loss_object = tf.keras.losses.MeanSquaredError(reduction=tf.keras.losses.Reduction.NONE)
+    loss_object = tf.keras.losses.MeanSquaredError(reduction="auto")
 
     # Define training step that minimizes the loss with the Adam optimizer
     if is_training:
