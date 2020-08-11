@@ -1,3 +1,5 @@
+import logging
+logging.getLogger("tensorflow").setLevel(logging.ERROR)
 
 from model.input_fn import *
 from model.model_fn import *
@@ -5,7 +7,7 @@ from model.training import *
 from model.utils.utils import Params
 
 if __debug__:
-    print('DEBUG')
+    print('******DEBUG******')
 
     data_path = 'dataset/test/' 
     if os.path.isfile(data_path):
@@ -26,16 +28,16 @@ if __debug__:
     print('=================================================')
     print('Dataset is built by %d images'% len(images_list))
 
-    # tf.debugging.set_log_device_placement(True)
-    # train_dataset = input_fn(True, images_list, force_list, params= params)
+    tf.debugging.set_log_device_placement(False)
+    train_dataset = input_fn(True, images_list, force_list, params= params)
 
     print('=================================================')
-
-    with tf.device('/CPU:0'):
-        mode = 'train'
-        model_spec = model_fn(mode, params) 
+    # with tf.device('/CPU:0'):
+    mode = 'train'
+    model_spec = model_fn(mode, params) 
 
     print('=================================================')
    
-    log_dir = './logs/'
+    log_dir = './logs/NailNet'
     training_and_eval(model_spec, log_dir, params, train_dataset)
+    print('=================================================')

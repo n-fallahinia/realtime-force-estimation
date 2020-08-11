@@ -95,10 +95,10 @@ def model_fn(mode, params, reuse=False):
      # -----------------------------------------------------------
     # METRICS AND SUMMARIES
     metrics = {
-        'train_loss' : tf.keras.metrics.MeanSquaredError(name='train_loss'),
+        'train_loss' : tf.keras.metrics.Mean(name='train_loss', dtype=tf.float32),
         'train_accuracy' : tf.keras.metrics.RootMeanSquaredError(name='train_accuracy'),
 
-        'test_loss' : tf.keras.metrics.MeanSquaredError(name='test_loss'),
+        'test_loss' : tf.keras.metrics.Mean(name='test_loss', dtype=tf.float32),
         'test_accuracy' :tf.keras.metrics.RootMeanSquaredError(name='test_accuracy')
     }
     # -----------------------------------------------------------

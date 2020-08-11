@@ -35,10 +35,10 @@ def train_step(model_spec, x_train, y_train, params):
     grads = tape.gradient(loss, model.trainable_variables)
     opt.apply_gradients(zip(grads, model.trainable_variables))
     # write metices to writer for summary use
-    train_loss = loss
-    trains_acc = train_accuracy(y_train, y_train_pred)
+    train_los = train_loss(loss)
+    train_acc = train_accuracy(y_train, y_train_pred)
 
-    return train_loss, trains_acc
+    return train_los, train_acc
 
 
 def training_and_eval(train_model_spec, log_dir, params, train_ds, restore_from=None):
@@ -71,7 +71,7 @@ def training_and_eval(train_model_spec, log_dir, params, train_ds, restore_from=
     # !!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # ========================================================================================
-    print("[INFO] trating the traning ...")
+    print("[INFO] training started ...")
     # loop over the number of epochs
     epochStart = time.time()
     for epoch in range(begin_at_epoch, begin_at_epoch + params.num_epochs):
@@ -80,26 +80,48 @@ def training_and_eval(train_model_spec, log_dir, params, train_ds, restore_from=
         num_steps = int(np.ceil(params.train_size / params.batch_size)) 
 
         # Use tqdm for progress bar
-        with tqdm(total=num_steps, desc="batch") as pbar:
+        with tqdm(total=num_steps, desc="Batch") as pbar:
             # loop over the data in batch size increments
             for x_train, y_train in train_ds.take(num_steps):
-                train_loss , train_accuracy = train_step(train_model_spec, x_train, y_train ,params)
+                train_loss, train_acc = train_step(train_model_spec, x_train, y_train ,params)
                 # Log the loss in the tqdm progress bar
                 sleep(0.1)
-                pbar.set_postfix(Train_Accuracy='{:04.2f}'.format(train_accuracy.numpy()))
+                metrics = {
+                    "Train_Accuracy": '{:04.2f}'.format(train_acc.numpy()),
+                    "Train_Loss": '{:04.2f}'.format(train_loss.numpy())
+                }
+                pbar.set_postfix(metrics)
                 pbar.update()
             pbar.close()
-                  
+            # # record train summary for tensor board
+            with train_summary_writer.as_default():
+                tf.summary.scalar('loss', train_loss, step=epoch)
+                tf.summary.scalar('accuracy', train_acc, step=epoch)
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!
+        # TODO  eval session
+        # loop over the eval data in batch size increments
+        # for x_eval, y_eval in eval_ds.take(num_steps):
+        #     eval_loss, eval_acc = test_step(train_model_spec, x_eval, y_eval ,params)
+        #     # Log the loss in the tqdm progress bar
+        #     sleep(0.1)
+        #     metrics = {
+        #         "Eval_Accuracy": '{:04.2f}'.format(eval_acc.numpy()),
+        #         "Eval_Loss": '{:04.2f}'.format(eval_loss.numpy())
+        #     }
+        # # # record train summary for tensor board
+        # with eval_summary_writer.as_default():
+        #     tf.summary.scalar('loss', eval_loss, step=epoch)
+        #     tf.summary.scalar('accuracy', eval_acc, step=epoch)
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!
+
     # show timing information for the epoch
     epochEnd = time.time()
     elapsed = (epochEnd - epochStart) / 60.0
-    print("took {:.4} minutes".format(elapsed))
+    print("[INFO] took {:.4} minutes".format(elapsed))
 
 # ========================================================================================
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!
-        # TODO  eval session
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!
-
+    if params.save_model:
+        pass
         # !!!!!!!!!!!!!!!!!!!!!!!!!!
         # TODO  save the best eval
         # !!!!!!!!!!!!!!!!!!!!!!!!!!
