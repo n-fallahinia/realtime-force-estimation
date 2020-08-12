@@ -92,7 +92,7 @@ def model_fn(mode, params, reuse=False):
             opt = tf.keras.optimizers.Adam(learning_rate=params.learning_rate)
         else:
             opt = tf.keras.optimizers.RMSprop(lr=params.learning_rate, momentum=params.bn_momentum)
-     # -----------------------------------------------------------
+    # -----------------------------------------------------------
     # METRICS AND SUMMARIES
     metrics = {
         'train_loss' : tf.keras.metrics.Mean(name='train_loss', dtype=tf.float32),

@@ -1,5 +1,5 @@
-import logging
-logging.getLogger("tensorflow").setLevel(logging.ERROR)
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 from model.input_fn import *
 from model.model_fn import *
@@ -30,6 +30,7 @@ if __debug__:
 
     tf.debugging.set_log_device_placement(False)
     train_dataset = input_fn(True, images_list, force_list, params= params)
+    eval_dataset  = train_dataset # JUST FOR NOW!!!!
 
     print('=================================================')
     # with tf.device('/CPU:0'):
@@ -39,5 +40,6 @@ if __debug__:
     print('=================================================')
    
     log_dir = './logs/NailNet'
-    training_and_eval(model_spec, log_dir, params, train_dataset)
+    train_model = Train_and_Evaluate(model_spec, train_dataset, eval_dataset,log_dir)
+    train_model.train_and_eval(params)
     print('=================================================')
