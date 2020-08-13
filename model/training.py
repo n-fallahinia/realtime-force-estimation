@@ -9,6 +9,8 @@ import tensorflow as tf
 import numpy as np
 from time import sleep
 
+from model.utils.utils import save_dict_to_json
+
 class Train_and_Evaluate():
     
     def __init__(self, train_model_spec, train_ds, eval_ds, log_dir):
@@ -70,7 +72,6 @@ class Train_and_Evaluate():
 
         return loss
 
-
     def train_and_eval(self, params, restore_from=None):
         """Train the model and evaluate every epoch.
         Args:
@@ -87,19 +88,21 @@ class Train_and_Evaluate():
         train_log_dir = os.path.join(self.log_dir, current_time , 'train_summaries')
         eval_log_dir = os.path.join(self.log_dir, current_time , 'eval_summaries')
 
+        checkpoint_dir = os.path.join(self.log_dir, current_time, "training_checkpoints", 'ckpt') 
+        model_dir = os.path.join(self.log_dir, current_time)
+
         train_summary_writer = tf.summary.create_file_writer(train_log_dir)
         eval_summary_writer = tf.summary.create_file_writer(eval_log_dir)
 
         begin_at_epoch = 0
+        best_eval_acc = 100.0
 
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!
         # Reload weights from directory if specified  
         if restore_from is not None:
             print("[INFO] Restoring parameters from {}".format(restore_from))
             if os.path.isdir(restore_from):
-                pass
-            # TODO  model restore from checkpoint
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!
+                reconstructed_model = os.path.join(restore_from, "model_{0:d}".format(params.restore_from_epoch))
+                self.model = keras.models.load_model(reconstructed_model)
 
     # TRAINING MAIN LOOP
     # ----------------------------------------------------------------------
@@ -111,9 +114,9 @@ class Train_and_Evaluate():
             # Compute number of batches in one epoch (one full pass over the training set)
             num_steps = int(np.ceil(params.train_size / params.batch_size)) 
             # Use tqdm for progress bar
-            with tqdm(total=num_steps, desc="[INFO] Epoch {0:d}".format(epoch)) as pbar:
+            with tqdm(total=num_steps, desc="[INFO] Epoch {0:d}".format(epoch + 1)) as pbar:
                 # loop over the data in batch size increments
-    # ----------------------------------------------------------------------
+        # ----------------------------------------------------------------------
         # TRAIN SESSION
                 for x_train, y_train in self.train_ds.take(num_steps):
                     train_loss = self.train_step(x_train, y_train)
@@ -130,7 +133,7 @@ class Train_and_Evaluate():
                 with train_summary_writer.as_default():
                     tf.summary.scalar('loss', self.train_loss.result(), step=epoch)
                     tf.summary.scalar('accuracy', self.train_accuracy.result(), step=epoch)
-    # ----------------------------------------------------------------------
+        # ----------------------------------------------------------------------
         # EVALUATION SESSION
                 # loop over the eval data in batch size increments
                 for x_eval, y_eval in self.eval_ds.take(num_steps):
@@ -144,21 +147,39 @@ class Train_and_Evaluate():
                 with eval_summary_writer.as_default():
                     tf.summary.scalar('loss', self.test_loss.result(), step=epoch)
                     tf.summary.scalar('accuracy', self.test_accuracy.result(), step=epoch)
-    # ----------------------------------------------------------------------
+        # ----------------------------------------------------------------------
+            metrics["Epoch"] = '{0:d}'.format(epoch + 1)
+            # If best_eval, save the model at best_save_path 
+            eval_acc = self.test_accuracy.result().numpy()
+            if params.save_model:
+                if eval_acc <= best_eval_acc:
+                    # Store new best accuracy
+                    best_eval_acc = eval_acc
+                    # Save weights
+                    best_save_path = os.path.join(model_dir, "model_{0:d}".format(epoch + 1))
+                    tf.keras.models.save_model(self.model, best_save_path, save_format = "h5")
+                    print("[INFO] Found new best accuracy, saving in {}".format(best_save_path))
+                    # Save best eval metrics in a json file in the model directory
+                    best_json_path = os.path.join(model_dir, "metrics_eval_best_weights.json")
+                    save_dict_to_json(metrics, best_json_path)
+
+            # Save latest eval metrics in a json file in the model directory
+            last_json_path = os.path.join(model_dir, "metrics_eval_last_weights.json")
+            save_dict_to_json(metrics, last_json_path)
+        # ----------------------------------------------------------------------
             # Reset training metrics at the end of each epoch
             self.train_loss.reset_states()
             self.train_accuracy.reset_states()
             self.test_loss.reset_states()
             self.test_accuracy.reset_states()
-
+        # end of train and eval
         # show timing information for the epoch
         epochEnd = time.time()
         elapsed = (epochEnd - epochStart) / 60.0
         print("[INFO] took {:.4} minutes".format(elapsed))
+    # ----------------------------------------------------------------------
 
-    # ========================================================================================
-        # if params.save_model:
-        #     pass
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!
-            # TODO  save the best eval
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!
+    # +++++++++++++++++++++++++++++++++++++++++
+    """TODO: save the best model as SavedModel tf format"""
+    # +++++++++++++++++++++++++++++++++++++++++
+
