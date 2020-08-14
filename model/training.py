@@ -178,8 +178,10 @@ class Train_and_Evaluate():
         elapsed = (epochEnd - epochStart) / 60.0
         print("[INFO] took {:.4} minutes".format(elapsed))
     # ----------------------------------------------------------------------
-
-    # +++++++++++++++++++++++++++++++++++++++++
-    """TODO: save the best model as SavedModel tf format"""
-    # +++++++++++++++++++++++++++++++++++++++++
+        reconstructed_best_model = tf.keras.models.load_model(best_save_path)
+        reconstructed_best_model.compile(optimizer= self.opt, loss= self.loss_object)
+        best_final_path = os.path.join(model_dir, "best_full_model_path")
+        tf.saved_model.save(reconstructed_best_model, best_final_path)
+        print("[INFO] Final model save in {}".format(best_final_path))
+        print("[INFO] training done !")
 
