@@ -9,7 +9,7 @@ import os
 import sys
 from pathlib import Path
 import numpy as np
-# from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split
 from PIL import Image  
 import PIL 
 
@@ -29,7 +29,7 @@ def load_train_withRnd(subNum ,load_force = True, raw_images = False, train_rati
     load_train_withIdx(subjIdx_list)
     
 
-def load_train_withIdx(subjIdx_list, filenames, load_force = True, raw_images = False, train_ratio = 0.8):
+def load_train_withIdx(subjIdx_list, filenames, load_force = True, raw_images = False, test_ratio = 0.2):
     """
     load the training dataset from images in subject folders and store them 
     in the train folder
@@ -38,35 +38,18 @@ def load_train_withIdx(subjIdx_list, filenames, load_force = True, raw_images = 
     - subjIdx_list: list of integers for subject indecies [1,17]
     - load_force: Flag to wether load the coressponding labels or not
     """
+    dataset_path = filenames['data']
     train_path = filenames['train']
     test_path = filenames['test']
-    valid_path =  filenames['eval']
+    eval_path =  filenames['eval']
     image_lists = []
     data_params = {} # might not be used
     force_lists = np.zeros((1,3))
     print('[INFO] Data Processing started ... ')
 
-    if (len(os.listdir(train_path+'/forces/')) != 0):
-        print('\tDeleting old train forces!')
-        train_force2rem = Path(train_path+'/forces/force.txt')
-        train_force2rem.unlink()
-    if (len(os.listdir(train_path+'/image/')) != 0):
-        print('\tDeleting old train images!')
-        train_image2rem = glob.glob((train_path+'/image/*.jpg'))
-        [os.remove(image2rem) for image2rem in train_image2rem] 
-
-    if (len(os.listdir(test_path+'/forces/')) != 0):
-        print('\tDeleting old test forces')
-        test_force2rem = Path(test_path+'/forces/force.txt')
-        test_force2rem.unlink()
-    if (len(os.listdir(test_path+'/image/')) != 0):
-        print('\tDeleting old test images!')
-        test_image2rem = glob.glob((test_path+'/image/*.jpg'))
-        [os.remove(image2rem) for image2rem in test_image2rem] 
-
     for subIdx in subjIdx_list:
-        subj_path = dataset_path+'subj_'+f'{subIdx:02d}'
-        print('Proccessing images for subject_' +f'{subIdx:02d}'+ ' ...', end =" ")
+        subj_path = dataset_path+'/subj_'+f'{subIdx:02d}'
+        print('\tProccessing images for subject_' +f'{subIdx:02d}'+ ' ...', end =" ")
 
         if(not os.path.isdir(subj_path)):
             print(' no file exists for subject_' +f'{subIdx:02d}'+ ' !!')
@@ -87,12 +70,14 @@ def load_train_withIdx(subjIdx_list, filenames, load_force = True, raw_images = 
             force_lists = np.vstack((force_lists, force_list))
 
     force_lists = force_lists[1:,:]
-    data_to_write = train_test_split_data(force_lists,image_lists,train_ratio)
-    print('Processing Done! ')
-    print("Number of train data :{0:4d}, Number of test data :{1:4d}"
-                . format(len(data_to_write[0]), len(data_to_write[1]))) 
+    data_to_write_train = train_test_split_data(force_lists, image_lists, test_ratio)
+    # force_lists_eval, force_lists_test, image_lists_eval, image_lists_test
+    data_to_write_test = train_test_split_data(data_to_write_train[1], data_to_write_train[3], 0.5)
+    print('[INFO] Processing Done! ')
+    print("[INFO] Number of train data :{0:4d}, Number of eval data :{1:4d}, Number of test data :{2:4d} "
+                . format(len(data_to_write_train[0]), len(data_to_write_test[0]),  len(data_to_write_test[1]))) 
     # data write part 
-    write_data(data_to_write, train_path, test_path)
+    write_data(data_to_write_train, data_to_write_test, train_path, eval_path ,test_path)
 
 def load_force_txt(force_path, force_num, force_dim = 3):
     """ read force from a txt file """
@@ -109,12 +94,12 @@ def load_force_txt(force_path, force_num, force_dim = 3):
 
     return force_list
 
-def train_test_split_data(force_lists, image_lists, train_ratio ,validation = True ):
+def train_test_split_data(force_lists, image_lists, test_ratio ,validation = True ):
     """ spliting data into 3 different set """
 
     assert len(force_lists) == len(image_lists), "images and forces have different size"
     mask = list(range(len(force_lists)))
-    mask_train, mask_test = train_test_split(mask, train_size= train_ratio, shuffle=True)
+    mask_train, mask_test = train_test_split(mask, test_size= test_ratio, shuffle=True)
 
     force_lists_train = force_lists[mask_train]
     force_lists_test = force_lists[mask_test]
@@ -124,36 +109,62 @@ def train_test_split_data(force_lists, image_lists, train_ratio ,validation = Tr
 
     return [force_lists_train, force_lists_test, image_lists_train, image_lists_test]
 
-def write_data(data_to_write, train_path, test_path):
+def write_data(data_to_write_train, data_to_write_test, train_path, eval_path ,test_path):
     """ write datat to a txt file """
-    force_lists_train = data_to_write[0]
-    force_lists_test = data_to_write[1]
-    image_lists_train = data_to_write[2]
-    image_lists_test = data_to_write[3]
+    force_lists_train = data_to_write_train[0]
+    image_lists_train = data_to_write_train[2]
+
+    force_lists_eval = data_to_write_test[0]
+    image_lists_eval = data_to_write_test[2]
+
+    force_lists_test = data_to_write_test[1]
+    image_lists_test = data_to_write_test[3]
+
+    filelist = list([train_path, eval_path, test_path])
+
+    for file in filelist:
+        force_path = os.path.join(file, 'forces')
+        image_path = os.path.join(file, 'image')
+        os.mkdir(force_path)
+        os.mkdir(image_path)
+
     # force data
     with open(train_path+'/forces/force.txt', 'w') as filestream: 
         for force in force_lists_train:
             filestream.write("%s,%s,%s\n"%(force[0], force[1], force[2]))
-    print('Train forces saved! ')
+    print('\tTrain forces saved! ')
+
+    with open(eval_path+'/forces/force.txt', 'w') as filestream: 
+        for force in force_lists_eval:
+            filestream.write("%s,%s,%s\n"%(force[0], force[1], force[2]))
+    print('\tEval forces saved! ')
 
     with open(test_path+'/forces/force.txt', 'w') as filestream: 
         for force in force_lists_test:
             filestream.write("%s,%s,%s\n"%(force[0], force[1], force[2]))
-    print('Test forces saved! ')
+    print('\tTest forces saved! ')
+
     # image data
     for Idx, train_image in enumerate(image_lists_train):
         img = Image.open(train_image)
         img.save(train_path+'/image/img_'+f'{Idx:04d}.jpg')
         if Idx%100 == 0:
             print('\t%d images are saved'% Idx);       
-    print('Train images saved! ')
+    print('\tTrain images saved! ')
+
+    for Idx, eval_image in enumerate(image_lists_eval):
+        img = Image.open(eval_image)
+        img.save(eval_path+'/image/img_'+f'{Idx:04d}.jpg')
+        if Idx%100 == 0:
+            print('\t%d images are saved'% Idx);  
+    print('\tEval images saved! ')
 
     for Idx, test_image in enumerate(image_lists_test):
         img = Image.open(test_image)
         img.save(test_path+'/image/img_'+f'{Idx:04d}.jpg')
         if Idx%100 == 0:
             print('\t%d images are saved'% Idx);  
-    print('Test images saved! ')
+    print('\tTest images saved! ')
 
 # if __debug__:
 #     print('debug')

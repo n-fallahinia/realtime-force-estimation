@@ -39,7 +39,7 @@ import os
 import sys
 
 from model.utils.utils import Params
-from model.utils import *
+from model.utils.data_util import *
 
 parser = argparse.ArgumentParser(description ='Build Fingernail dataset')
 parser.add_argument('--mode', default='hyper', 
@@ -62,8 +62,6 @@ parser.add_argument('-v', dest ='verbose',
 
 if __name__ == '__main__':
 
-    print('******DEBUG******')
-
     # Load the parameters from json file
     args = parser.parse_args()
     json_path = os.path.join(args.model_dir, 'params.json')
@@ -73,27 +71,38 @@ if __name__ == '__main__':
     assert os.path.isdir(args.data_dir), "Couldn't find the dataset at {}".format(args.data_dir)
 
     # Define the data directories
-    train_data_dir = os.path.join(args.data_dir, 'train')
-    test_data_dir = os.path.join(args.data_dir, 'test')
-    eval_data_dir = os.path.join(args.data_dir, 'eval')
+    train_data_dir = os.path.join(args.output_dir, 'train')
+    test_data_dir = os.path.join(args.output_dir, 'test')
+    eval_data_dir = os.path.join(args.output_dir, 'eval')
+    dataset_dir = args.data_dir
 
     filenames = {'train': train_data_dir,
                 'eval': eval_data_dir,
-                'test': test_data_dir}
+                'test': test_data_dir,
+                'data': dataset_dir}
 
     # Check that we are not overwriting some previous experiment
-    if not os.path.exists(args.output_dir):
-        print('[INFO] Making the data directory ... ')
-        os.mkdir(args.output_dir)
-    else:
-        rem_flag = input ("[WARNING]: output dir {} already exists, would you like to reomve them? [Y/N]: ".format(args.output_dir)) 
-        if rem_flag == 'Y' or rem_flag == 'y':
-            print('[INFO] Deleting old folds ...')
-        else:
-            sys.exit()
-                
+    if  os.path.exists(args.output_dir):
+        print ("[Error]: output dir {} already exists !".format(args.output_dir)) 
+        sys.exit()
 
+    print('[INFO] Making the data directory ... ')
+    os.mkdir(args.output_dir)
+    os.mkdir(train_data_dir)
+    os.mkdir(test_data_dir)
+    os.mkdir(eval_data_dir)
+            
+    if args.mode == 'hyper':
+        print('[INFO] Selected mode is: {}'.format(args.mode))
+        subjIdx_list = list(range(1,18))
+        load_train_withIdx(subjIdx_list, filenames)
+        print('[INFO] Done building data')
+    
+    if args.mode == 'opt':
+        # TODO
+        pass
 
-#     subjIdx_list = [1,3,5]
-#    # lead_train_withRnd(5)
-#     load_train_withIdx(subjIdx_list)
+    if args.mode == 'gen':
+        # TODO
+        pass
+
