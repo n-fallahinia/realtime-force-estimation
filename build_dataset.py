@@ -36,6 +36,7 @@ different methods of splitting can be used based on the parser argument. Here ar
 
 import argparse
 import os
+import sys
 
 from model.utils.utils import Params
 from model.utils import *
@@ -43,10 +44,16 @@ from model.utils import *
 parser = argparse.ArgumentParser(description ='Build Fingernail dataset')
 parser.add_argument('--mode', default='hyper', 
                     help="Hyper-parameters tuning mode")
+
 parser.add_argument('--data_dir', default='./dataset',
                     help="Directory containing the dataset")
+
+parser.add_argument('--output_dir', default='./data',
+                    help="Where to write the new data")
+                    
 parser.add_argument('--model_dir', default='./experiments',
                     help="Experiment directory containing params.json")
+
 parser.add_argument('--use_raw', default='false',
                     help="Experiment directory containing params.json")
                 
@@ -65,8 +72,26 @@ if __name__ == '__main__':
 
     assert os.path.isdir(args.data_dir), "Couldn't find the dataset at {}".format(args.data_dir)
 
+    # Define the data directories
+    train_data_dir = os.path.join(args.data_dir, 'train')
+    test_data_dir = os.path.join(args.data_dir, 'test')
+    eval_data_dir = os.path.join(args.data_dir, 'eval')
+
+    filenames = {'train': train_data_dir,
+                'eval': eval_data_dir,
+                'test': test_data_dir}
 
     # Check that we are not overwriting some previous experiment
+    if not os.path.exists(args.output_dir):
+        print('[INFO] Making the data directory ... ')
+        os.mkdir(args.output_dir)
+    else:
+        rem_flag = input ("[WARNING]: output dir {} already exists, would you like to reomve them? [Y/N]: ".format(args.output_dir)) 
+        if rem_flag == 'Y' or rem_flag == 'y':
+            print('[INFO] Deleting old folds ...')
+        else:
+            sys.exit()
+                
 
 
 #     subjIdx_list = [1,3,5]

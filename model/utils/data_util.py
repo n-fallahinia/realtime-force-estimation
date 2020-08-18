@@ -29,7 +29,7 @@ def load_train_withRnd(subNum ,load_force = True, raw_images = False, train_rati
     load_train_withIdx(subjIdx_list)
     
 
-def load_train_withIdx(subjIdx_list, load_force = True, raw_images = False, train_ratio = 0.8):
+def load_train_withIdx(subjIdx_list, filenames, load_force = True, raw_images = False, train_ratio = 0.8):
     """
     load the training dataset from images in subject folders and store them 
     in the train folder
@@ -38,14 +38,13 @@ def load_train_withIdx(subjIdx_list, load_force = True, raw_images = False, trai
     - subjIdx_list: list of integers for subject indecies [1,17]
     - load_force: Flag to wether load the coressponding labels or not
     """
-    dataset_path = './dataset/'
-    train_path = dataset_path + 'train'
-    test_path = dataset_path + 'test'
-    valid_path =  dataset_path + 'validation'
+    train_path = filenames['train']
+    test_path = filenames['test']
+    valid_path =  filenames['eval']
     image_lists = []
     data_params = {} # might not be used
     force_lists = np.zeros((1,3))
-    print('Data Processing started ... ')
+    print('[INFO] Data Processing started ... ')
 
     if (len(os.listdir(train_path+'/forces/')) != 0):
         print('\tDeleting old train forces!')
