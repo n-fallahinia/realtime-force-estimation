@@ -112,13 +112,14 @@ class Train_and_Evaluate():
         for epoch in range(begin_at_epoch, begin_at_epoch + params.num_epochs):
             # sys.stdout.flush()
             # Compute number of batches in one epoch (one full pass over the training set)
-            num_steps = int(np.ceil(params.train_size / params.batch_size)) 
+            num_steps_train = int(np.ceil(params.train_size / params.batch_size))
+            num_steps_eval = int(np.ceil(params.eval_size / params.batch_size))  
             # Use tqdm for progress bar
-            with tqdm(total=num_steps, desc="[INFO] Epoch {0:d}".format(epoch + 1)) as pbar:
+            with tqdm(total=num_steps_train, desc="[INFO] Epoch {0:d}".format(epoch + 1)) as pbar:
                 # loop over the data in batch size increments
         # ----------------------------------------------------------------------
         # TRAIN SESSION
-                for x_train, y_train in self.train_ds.take(num_steps):
+                for x_train, y_train in self.train_ds.take(num_steps_train):
                     train_loss = self.train_step(x_train, y_train)
                     # Log the loss in the tqdm progress bar
                     sleep(0.1)
@@ -136,7 +137,7 @@ class Train_and_Evaluate():
         # ----------------------------------------------------------------------
         # EVALUATION SESSION
                 # loop over the eval data in batch size increments
-                for x_eval, y_eval in self.eval_ds.take(num_steps):
+                for x_eval, y_eval in self.eval_ds.take(num_steps_eval):
                     eval_loss = self.test_step(x_eval, y_eval)
                     # Display metrics at the end of each epoch.
                     metrics["Eval_Accuracy"] = '{:04.2f}'.format(self.test_accuracy.result().numpy())
@@ -176,12 +177,12 @@ class Train_and_Evaluate():
         # show timing information for the epoch
         epochEnd = time.time()
         elapsed = (epochEnd - epochStart) / 60.0
-        print("[INFO] took {:.4} minutes".format(elapsed))
+        print("[INFO] Took {:.4} minutes".format(elapsed))
     # ----------------------------------------------------------------------
         reconstructed_best_model = tf.keras.models.load_model(best_save_path)
         reconstructed_best_model.compile(optimizer= self.opt, loss= self.loss_object)
         best_final_path = os.path.join(model_dir, "best_full_model_path")
         tf.saved_model.save(reconstructed_best_model, best_final_path)
         print("[INFO] Final model save in {}".format(best_final_path))
-        print("[INFO] training done !")
+        print("[INFO] Training done !")
 

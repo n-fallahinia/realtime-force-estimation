@@ -3,12 +3,12 @@
 import tensorflow as tf
 from tensorflow import keras
 
-from tensorflow.keras import layers
-from tensorflow.keras import activations
-from keras.layers.normalization import BatchNormalization
+# from tensorflow.keras import layers
+# from tensorflow.keras import activations
+# from keras.layers import BatchNormalization
 from tensorflow.keras import Model
 from tensorflow.keras.models import Sequential
-
+from tensorflow.keras.layers import Activation, Dropout, Dense, Flatten, Dropout, BatchNormalization, GlobalAveragePooling2D
 
 def buil_model(is_training, image_size, params, classes = 3):
     
@@ -40,26 +40,26 @@ def buil_model(is_training, image_size, params, classes = 3):
     model.add(base_model)
     
     # global average layer (also faltten the output of MobileNet)
-    model.add(layers.GlobalAveragePooling2D())
+    model.add(GlobalAveragePooling2D())
 
     # first FC layer with droupout
-    model.add(layers.Dense(params.predic_layer_size))
+    model.add(Dense(params.predic_layer_size))
 
     if params.use_batch_norm:
         model.add(BatchNormalization())
 
     if params.use_tanh:
         # activation_layer 
-        model.add(layers.Activation(activations.tanh))
+        model.add(Activation('tanh'))
     else:
-        model.add(layers.Activation(activations.relu))
+        model.add(Activation('relu'))
 
     # drop out
     if params.use_dropout:
-        model.add(layers.Dropout(0.5))
+        model.add(Dropout(0.5))
 
     # prediction layer with 3 outputs
-        model.add(layers.Dense(classes, activation= 'linear'))
+        model.add(Dense(classes, activation= 'linear'))
     # -----------------------------------------------------------
     # return the constructed network architecture
     return model

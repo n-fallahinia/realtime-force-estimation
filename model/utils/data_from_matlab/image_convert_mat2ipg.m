@@ -2,7 +2,7 @@ clc
 clear
 close all
 
-subjectIdx = 18;
+subjectIdx = 17;
 remove_flag = false;
 data_folder = '/home/navid/realtime-force-estimation/dataset';
 subject_folder = sprintf('%s/subj_%02d', data_folder,subjectIdx);

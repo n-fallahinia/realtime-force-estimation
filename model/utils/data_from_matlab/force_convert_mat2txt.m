@@ -2,7 +2,7 @@ clc
 clear
 close all
 
-subjectIdx = 17;
+subjectIdx = 18;
 remove_flag = false;
 data_folder = '/home/navid/realtime-force-estimation/dataset';
 subject_folder = sprintf('%s/subj_%02d', data_folder,subjectIdx);
@@ -17,7 +17,7 @@ if (~exist(force_folder,'dir'))
     error('force folder does not exist!')
 end
 
-fprintf('images will be saved in %s \n',force_folder);
+fprintf('forces will be saved in %s \n',force_folder);
 
 force_file = sprintf('%s/params_%02d.mat', force_folder,subjectIdx);
 load(force_file)
