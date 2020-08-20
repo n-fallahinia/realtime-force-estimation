@@ -73,7 +73,7 @@ if __name__ == '__main__':
     print('[INFO] Dataset is built by {0} training images and {1} eval images '
             .format(len(images_list_train), len(images_list_eval)))
 
-    tf.debugging.set_log_device_placement(False)
+    tf.debugging.set_log_device_placement(args.v)
     train_dataset = input_fn(True, images_list_train, force_list_train, params= params)
     eval_dataset  = input_fn(False, images_list_eval, force_list_eval, params= params)
     print('[INFO] Data pipeline is built')
@@ -87,7 +87,6 @@ if __name__ == '__main__':
 
     # Train the model
     print('=================================================')
-    print('[INFO] Training started ...')
     train_model = Train_and_Evaluate(model_spec, train_dataset, eval_dataset, args.log_dir)
     train_model.train_and_eval(params)
     print('=================================================')
