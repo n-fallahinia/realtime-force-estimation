@@ -27,7 +27,9 @@ class Train_and_Evaluate():
 
         self.metrics = train_model_spec['metrics']
         self.train_loss = self.metrics['train_loss']
-        self.train_accuracy = self.metrics['train_accuracy']
+        self.train_accuracy_rmse = self.metrics['train_RMSE']
+        self.train_accuracy_mse = self.metrics['train_MSE']
+        self.train_accuracy_mae = self.metrics['train_MAE']
         self.test_loss = self.metrics['test_loss']
         self.test_accuracy = self.metrics['test_accuracy']
 
@@ -50,7 +52,9 @@ class Train_and_Evaluate():
         self.opt.apply_gradients(zip(grads, self.model.trainable_variables))
 
         # write metices to writer for summary use
-        self.train_accuracy.update_state(y_train, logits)
+        self.train_accuracy_rmse.update_state(y_train, logits)
+        self.train_accuracy_mse.update_state(y_train, logits)
+        self.train_accuracy_mae.update_state(y_train, logits)
         self.train_loss.update_state(loss)
 
         return loss
@@ -125,15 +129,22 @@ class Train_and_Evaluate():
                     sleep(0.1)
                     # Display metrics at the end of each epoch.
                     metrics = {
-                        "Train_Accuracy": '{:04.2f}'.format(self.train_accuracy.result().numpy()),
+                        "Train_RMSE": '{:04.2f}'.format(self.train_accuracy_rmse.result().numpy()),
+                        # "Train_MSE": '{:04.2f}'.format(self.train_accuracy_mse.result().numpy()),
+                        # "Train_MAE": '{:04.2f}'.format(self.train_accuracy_mae.result().numpy()),
                         "Train_Loss": '{:04.2f}'.format(self.train_loss.result().numpy())
                     }
                     pbar.set_postfix(metrics)
                     pbar.update()
                 # record train summary for tensor board
                 with train_summary_writer.as_default():
-                    tf.summary.scalar('loss', self.train_loss.result(), step=epoch)
-                    tf.summary.scalar('accuracy', self.train_accuracy.result(), step=epoch)
+                    tf.summary.scalar('loss', self.train_loss.result(), step=epoch + 1)
+                    tf.summary.scalar('rmse', self.train_accuracy_rmse.result(), step=epoch + 1)
+                    tf.summary.scalar('mse', self.train_accuracy_mse.result(), step=epoch + 1)
+                    tf.summary.scalar('mae', self.train_accuracy_mae.result(), step=epoch + 1)
+                    
+                    tf.summary.image('training images', x_train, step=epoch + 1, max_outputs=10)
+                    # tf.summary.trace_export(name="test_step_trace", step=epoch, profiler_outdir=train_log_dir)
         # ----------------------------------------------------------------------
         # EVALUATION SESSION
                 # loop over the eval data in batch size increments
@@ -146,8 +157,8 @@ class Train_and_Evaluate():
                 pbar.close()
                 # record train summary for tensor board
                 with eval_summary_writer.as_default():
-                    tf.summary.scalar('loss', self.test_loss.result(), step=epoch)
-                    tf.summary.scalar('accuracy', self.test_accuracy.result(), step=epoch)
+                    tf.summary.scalar('loss', self.test_loss.result(), step=epoch + 1)
+                    tf.summary.scalar('accuracy', self.test_accuracy.result(), step=epoch + 1)
         # ----------------------------------------------------------------------
             metrics["Epoch"] = '{0:d}'.format(epoch + 1)
             # If best_eval, save the model at best_save_path 
@@ -170,7 +181,9 @@ class Train_and_Evaluate():
         # ----------------------------------------------------------------------
             # Reset training metrics at the end of each epoch
             self.train_loss.reset_states()
-            self.train_accuracy.reset_states()
+            self.train_accuracy_rmse.reset_states()
+            self.train_accuracy_mse.reset_states()
+            self.train_accuracy_mae.reset_states()
             self.test_loss.reset_states()
             self.test_accuracy.reset_states()
         # end of train and eval
@@ -179,10 +192,12 @@ class Train_and_Evaluate():
         elapsed = (epochEnd - epochStart) / 60.0
         print("[INFO] Took {:.4} minutes".format(elapsed))
     # ----------------------------------------------------------------------
-        reconstructed_best_model = tf.keras.models.load_model(best_save_path)
-        reconstructed_best_model.compile(optimizer= self.opt, loss= self.loss_object)
-        best_final_path = os.path.join(model_dir, "best_full_model_path")
-        tf.saved_model.save(reconstructed_best_model, best_final_path)
-        print("[INFO] Final model save in {}".format(best_final_path))
-        print("[INFO] Training done !")
+        if params.save_model:
+            reconstructed_best_model = tf.keras.models.load_model(best_save_path)
+            reconstructed_best_model.compile(optimizer= self.opt, loss= self.loss_object)
+            best_final_path = os.path.join(model_dir, "best_full_model_path")
+            tf.saved_model.save(reconstructed_best_model, best_final_path)
+            print("[INFO] Final model save in {}".format(best_final_path))
+        
+        print("[INFO] Training done and log saved in {} ".format(model_dir))
 

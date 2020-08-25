@@ -26,12 +26,13 @@ accurate.Test set is already created so it only splits the data to "train" and "
 different methods of splitting can be used based on the parser argument. Here are each method:
 
 1- Hyper-parameters tuning: in this case the entire subject data set will be used with 80%
-    for training and 20% for evaluation. 
+    for training and 20% for evaluation and testing. 
 2- Optimality: To find out how many human subjects should be in traing ste in order to optimize 
    the estimation error, 3 subjects are selected randomly for evals set and a different
    configuration of subjects will be used for training eg. 5, 10, 12, 15.
 3- Generalizability: To figure out how many human subjects needed in test dataset to make statistically 
    significant conclusions about estimation error.
+4- Single subject: build the model for a singel subject
 """
 
 import argparse
@@ -98,9 +99,11 @@ if __name__ == '__main__':
         load_train_withIdx(subjIdx_list, filenames)
         print('[INFO] Done building data')
     
-    if args.mode == 'opt':
-        # TODO
-        pass
+    if args.mode == 'sing':
+        print('[INFO] Selected mode is: {}'.format(args.mode))
+        subjIdx_list = [1] # MUST SPECIFY THE IDX LIST HERE
+        load_train_withIdx(subjIdx_list, filenames)
+        print('[INFO] Done building data')
 
     if args.mode == 'gen':
         # TODO

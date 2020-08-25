@@ -3,6 +3,8 @@
 dataset/
 logs/
 data/
+dataset_single/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,24 +1,20 @@
- 
-{   
+{
     "batch_size": 32,
     "num_epochs": 5,
-
     "num_channels": 16,
     "predic_layer_size": 1024,
     "bn_momentum": 0.9,
-    "learning_rate": 1e-3,
+    "learning_rate": 0.01,
     "use_batch_norm": true,
     "use_dropout": true,
     "use_tanh": false,
     "adam_opt": true,
     "base_train": true,
     "use_ResNet": false,
-
     "image_size": 224,
     "use_random_flip": false,
     "use_random_color": false,
     "num_labels": 3,
-
     "num_parallel_calls": 4,
     "save_summary_steps": 1,
     "save_model": false

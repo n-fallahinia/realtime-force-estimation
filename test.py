@@ -1,45 +1,54 @@
+"""
+Script to evaluate the model using test data
+Make sure to run the "build_dataset.py" to creat the data folder
+Navid Fallahinia - 07/11/2020
+BioRobotics Lab
+"""
+
+import argparse
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-from model.input_fn import *
-from model.model_fn import *
-from model.training import *
-from model.utils.utils import Params
+import tensorflow as tf
 
-if __debug__:
-    print('******DEBUG******')
+parser = argparse.ArgumentParser()
+parser.add_argument('--model_dir', default='./experiments',
+                    help="Experiment directory containing params.json")
 
-    data_path = 'dataset/test/' 
-    if os.path.isfile(data_path):
-        print('%s does not exists '% data_path)       
-    # set the data path 
-    image_path = data_path + 'image/'
-    force_path = data_path + 'forces/force.txt'
+parser.add_argument('--data_dir', default='./data_single',
+                    help="Directory containing the dataset")
 
-    # load the params from json file
-    json_path = os.path.join('experiments/', 'params.json')
+if __name__ == '__main__':
+    
+    args = parser.parse_args()
+
+    print("TensorFlow version: ", tf.__version__)
+    assert version.parse(tf.__version__).release[0] >= 2, \
+    "This notebook requires TensorFlow 2.0 or above."
+
+    # check if the data is available
+    assert os.path.exists(args.data_dir), "No data file found at {}".format(args.data_dir)
+
+    # Load the parameters from json file
+    json_path = os.path.join(args.model_dir, 'params.json')
     assert os.path.isfile(json_path), "No json configuration file found at {}".format(json_path)
     params = Params(json_path)
 
-    images_list = glob.glob(image_path + '*.jpg')
-    force_list = load_force_txt(force_path,len(images_list))
-    image_size = (224, 224 ,3)
+    test_data_dir = os.path.join(args.data_dir, 'test')
 
-    print('=================================================')
-    print('Dataset is built by %d images'% len(images_list))
+    # Get the filenames from the train and dev sets
+    test_filenames = [os.path.join(test_data_dir, f) for f in os.listdir(test_data_dir)]
 
-    tf.debugging.set_log_device_placement(False)
-    train_dataset = input_fn(True, images_list, force_list, params= params)
-    eval_dataset  = train_dataset # JUST FOR NOW!!!!
+    # Get the train images list
+    images_list_test = glob.glob(test_filenames[0] + '/*.jpg')
 
-    print('=================================================')
-    # with tf.device('/CPU:0'):
-    mode = 'train'
-    model_spec = model_fn(mode, params) 
+    # Get the label forces 
+    force_list_test = load_force_txt(test_filenames[1]+ '/force.txt',len(images_list_test))
 
+    # Specify the sizes of the dataset we train on and evaluate on
+    params.test_size = len(images_list_test)
+
+    # Create the two iterators over the two datasets
     print('=================================================')
-   
-    log_dir = './logs/NailNet'
-    train_model = Train_and_Evaluate(model_spec, train_dataset, eval_dataset,log_dir)
-    train_model.train_and_eval(params)
-    print('=================================================')
+    print('[INFO] test data is built by {0} images'.format(len(images_list_test)))
+    train_dataset = input_fn(False, images_list_test, force_list_test, params= params)

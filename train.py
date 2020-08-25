@@ -8,6 +8,7 @@ BioRobotics Lab
 import argparse
 import os
 import random
+from packaging import version
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 from model.input_fn import *
@@ -19,7 +20,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--model_dir', default='./experiments',
                     help="Experiment directory containing params.json")
 
-parser.add_argument('--data_dir', default='./data',
+parser.add_argument('--data_dir', default='./data_single',
                     help="Directory containing the dataset")
 
 parser.add_argument('--restore_from', default=None,
@@ -36,9 +37,11 @@ parser.add_argument('--v', default=False,
 
 if __name__ == '__main__':
 
-    print('******DEBUG******')
     # Set the random seed for the whole graph for reproductible experiments
     tf.random.set_seed(230)
+    print("TensorFlow version: ", tf.__version__)
+    assert version.parse(tf.__version__).release[0] >= 2, \
+    "This notebook requires TensorFlow 2.0 or above."
 
     # Load the parameters from json file
     args = parser.parse_args()
@@ -48,6 +51,10 @@ if __name__ == '__main__':
 
     # check if the data is available
     assert os.path.exists(args.data_dir), "No data file found at {}".format(args.data_dir)
+
+    # check if the log file is available
+    if not os.path.exists(args.log_dir):
+        os.mkdir(args.log_dir)
 
     train_data_dir = os.path.join(args.data_dir, 'train')
     eval_data_dir = os.path.join(args.data_dir, 'eval')
