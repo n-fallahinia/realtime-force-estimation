@@ -1,9 +1,9 @@
 # specific files
 .vscode/
 dataset/
-logs/
+log/
 data/
-dataset_single/
+data_single/
 
 
 # Byte-compiled / optimized / DLL files

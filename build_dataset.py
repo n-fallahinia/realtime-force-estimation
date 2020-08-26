@@ -49,7 +49,7 @@ parser.add_argument('--mode', default='hyper',
 parser.add_argument('--data_dir', default='./dataset',
                     help="Directory containing the dataset")
 
-parser.add_argument('--output_dir', default='./data',
+parser.add_argument('--output_dir', default='./data_single',
                     help="Where to write the new data")
                     
 parser.add_argument('--model_dir', default='./experiments',
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     
     if args.mode == 'sing':
         print('[INFO] Selected mode is: {}'.format(args.mode))
-        subjIdx_list = [1] # MUST SPECIFY THE IDX LIST HERE
+        subjIdx_list = [1,3,5,6] # MUST SPECIFY THE IDX LIST HERE
         load_train_withIdx(subjIdx_list, filenames)
         print('[INFO] Done building data')
 
