@@ -4,6 +4,7 @@ dataset/
 log/
 data/
 data_single/
+test/
 
 
 # Byte-compiled / optimized / DLL files

@@ -17,6 +17,8 @@
     "image_size": 224,
     "use_random_flip": false,
     "use_random_color": false,
+    "use_hsv": false,
+    "sat_factor":0.5,
     "num_labels": 3,
 
     "num_parallel_calls": 4,
