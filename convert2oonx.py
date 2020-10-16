@@ -16,13 +16,14 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 from tensorflow import keras
 
+import onnx
 import tf2onnx
 # import keras2onnx
 
 PYTHON = sys.executable
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--model_dir', default='./log/20200827-170907',
+parser.add_argument('--model_dir', default='./log/20201012-095601',
                     help="log directory containing the saved model")
 
 parser.add_argument('--mode', default='tf', 
@@ -52,14 +53,12 @@ if __name__ == '__main__':
         # Launch training with this config
         cmd = "{python} -m tf2onnx.convert --saved-model {model_dir} --output {output_dir}".format(python=PYTHON,
             model_dir=model_dir, output_dir=output_dir)
-        print(cmd)
         check_call(cmd, shell=True)
-        print('Done!')
-
+        
     elif args.mode == 'keras':
         model_path = args.model_dir
-        assert os.path.isfile(model_path), "No tf model found at {}".format(model_path)   
-        # load model
+        assert os.path.isfile(model_path), "No tf model found at {}".format(model_path)  
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         # TODO
         # model = tf.keras.models.load_model(model_path)
@@ -68,12 +67,11 @@ if __name__ == '__main__':
     else:
         print('invalid mode')
 
+    onnx_model = onnx.load(output_dir)
+    onnx.checker.check_model(onnx_model)
+    print('The model is checked!')
+
     if args.v:
         # Launch netron with this config
         cmd = "netron {output_dir}".format(output_dir=output_dir)
-        print(cmd)
         check_call(cmd, shell=True)
-
-
-
-    

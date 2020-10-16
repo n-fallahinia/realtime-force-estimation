@@ -165,9 +165,3 @@ def write_data(data_to_write_train, data_to_write_test, train_path, eval_path ,t
         if Idx%100 == 0:
             print('\t%d images are saved'% Idx);  
     print('\tTest images saved! ')
-
-# if __debug__:
-#     print('debug')
-#     subjIdx_list = [1,3,5]
-# #     # lead_train_withRnd(5)
-#     load_train_withIdx(subjIdx_list)

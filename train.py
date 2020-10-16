@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--model_dir', default='./experiments',
                     help="Experiment directory containing params.json")
 
-parser.add_argument('--data_dir', default='./data_single',
+parser.add_argument('--data_dir', default='./data_5',
                     help="Directory containing the dataset")
 
 parser.add_argument('--restore_from', default=None,
@@ -32,7 +32,7 @@ parser.add_argument('--log_dir', default="./log",
 parser.add_argument('--mode', default='train', 
                     help="train or test mode")
 
-parser.add_argument('--v', default=False,
+parser.add_argument('--v', default=True,
                     help ='verbose mode')
 
 if __name__ == '__main__':

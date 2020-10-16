@@ -43,13 +43,13 @@ from model.utils.utils import Params
 from model.utils.data_util import *
 
 parser = argparse.ArgumentParser(description ='Build Fingernail dataset')
-parser.add_argument('--mode', default='hyper', 
+parser.add_argument('--mode', default='sing', 
                     help="Hyper-parameters tuning mode")
 
-parser.add_argument('--data_dir', default='./dataset',
+parser.add_argument('--data_dir', default='./dataset_2',
                     help="Directory containing the dataset")
 
-parser.add_argument('--output_dir', default='./data_single',
+parser.add_argument('--output_dir', default='./data_3',
                     help="Where to write the new data")
                     
 parser.add_argument('--model_dir', default='./experiments',
@@ -95,13 +95,13 @@ if __name__ == '__main__':
             
     if args.mode == 'hyper':
         print('[INFO] Selected mode is: {}'.format(args.mode))
-        subjIdx_list = list(range(1,18))
+        subjIdx_list = list(range(1,11))
         load_train_withIdx(subjIdx_list, filenames)
         print('[INFO] Done building data')
     
     if args.mode == 'sing':
         print('[INFO] Selected mode is: {}'.format(args.mode))
-        subjIdx_list = [1,3,5,6] # MUST SPECIFY THE IDX LIST HERE
+        subjIdx_list = [1] # MUST SPECIFY THE IDX LIST HERE
         load_train_withIdx(subjIdx_list, filenames)
         print('[INFO] Done building data')
 

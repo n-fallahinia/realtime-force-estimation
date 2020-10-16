@@ -1,7 +1,7 @@
  
 {   
     "batch_size": 32,
-    "num_epochs": 5,
+    "num_epochs": 20,
 
     "num_channels": 16,
     "predic_layer_size": 1024,

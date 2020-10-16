@@ -2,9 +2,9 @@ clc
 clear
 close all
 
-subjectIdx = 17;
+subjectIdx = 4;
 remove_flag = false;
-data_folder = '/home/navid/realtime-force-estimation/dataset';
+data_folder = '/home/navid/realtime-force-estimation/dataset_2';
 subject_folder = sprintf('%s/subj_%02d', data_folder,subjectIdx);
 
 if (~exist(subject_folder,'dir'))

@@ -43,8 +43,8 @@ def force_show(sub_Idx):
     plt.show()
 
 def train_force_show():
-    force_path = './dataset/train/forces/force.txt'
-    image_path = './dataset/train/image/'
+    force_path = './data_4/train/forces/force.txt'
+    image_path = './data_4/train/image/'
     force_num = len(glob.glob(image_path + '*.jpg'))
     force_list = load_force_txt(force_path,force_num)
     print('showing '+f'{force_num:03d}'+ ' raw forces for the train data')
@@ -62,8 +62,8 @@ def train_force_show():
     plt.show()
 
 def test_force_show():
-    force_path = './dataset/test/forces/force.txt'
-    image_path = './dataset/test/image/'
+    force_path = './data_4/test/forces/force.txt'
+    image_path = './data_4/test/image/'
     force_num = len(glob.glob(image_path + '*.jpg'))
     force_list = load_force_txt(force_path,force_num)
     print('showing '+f'{force_num:03d}'+ ' raw forces for the test data')
@@ -98,7 +98,7 @@ def train_image_show(img_num=15):
     plt.show()
 
 
-# if __debug__:
-#     print('debug')
-#     sub_Idx = 5
-#     train_image_show()
+if __debug__:
+    print('debug')
+    sub_Idx = 5
+    train_force_show()

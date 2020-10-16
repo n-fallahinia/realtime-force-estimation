@@ -1,9 +1,8 @@
 # specific files
 .vscode/
-dataset/
+dataset_*/
 log/
-data/
-data_single/
+data_*/
 test/
 
 
@@ -137,3 +136,4 @@ dmypy.json
 # Pyre type checker
 # <<<<<<< HEAD
 .pyre/
+convert2oonx.py
