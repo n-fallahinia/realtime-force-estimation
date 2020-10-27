@@ -102,6 +102,3 @@ It will train and evaluate a model with different values of the spesified hyperp
 ```
 python test.py --data_dir data --model_dir log/{$BEST_MODEL_PATH}
 ```
-
-## Inference using TensorRT and OONX 
-(TODO)
