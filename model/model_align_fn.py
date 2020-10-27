@@ -2,13 +2,17 @@
 
 import tensorflow as tf
 from tensorflow import keras
+import numpy as np
 
 # from tensorflow.keras import layers
 # from tensorflow.keras import activations
 # from keras.layers import BatchNormalization
 from tensorflow.keras import Model
+from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Activation, Dropout, Dense, Flatten, Dropout, BatchNormalization, GlobalAveragePooling2D, MaxPooling2D, Conv2D
+
+from model.stn_layers import  BilinearInterpolation
 
 def buil_model(is_training, image_size, params, classes = 3):
     
@@ -22,7 +26,7 @@ def buil_model(is_training, image_size, params, classes = 3):
     """
     IMG_SHAPE = image_size
     chanDim = -1
-    assert IMG_SHAPE == (params.image_size, params.image_size, 3)
+    assert IMG_SHAPE == (params.image_size_w, params.image_size_h, 3)
 
     if params.use_ResNet:
         base_model = tf.keras.applications.InceptionResNetV2(input_shape=IMG_SHAPE,
@@ -71,23 +75,58 @@ def buil_model(is_training, image_size, params, classes = 3):
     # return the constructed network architecture
     return model
 
+def buil_model_final(model_decoder, stn_module, image_size, params, classes = 3):
+        
+    """Compute logits of the model (output distribution)
+    Args:
+        is_training: (bool) whether we are training or not
+        model_decoder: the force estimation model based on MobileNet
+        params: (Params) hyperparameters
+    Returns:
+        output: output of the model
+    """
+    sampling_size = (params.sample_size, params.sample_size)
+    IMG_SHAPE = image_size
 
-def model_fn(mode, params, reuse=False):
+    if params.use_affine:
+        weights = stn_module.get_weights()
+        locnet = tf.constant(weights[-1])
+    else:
+        weights = np.zeros((6,), dtype='float32')
+        weights[0] = 1
+        weights[4] = 1
+        locnet = tf.constant(weights)
+
+    image = Input(shape=IMG_SHAPE)
+
+    aligned_image = BilinearInterpolation(sampling_size, locnet)(image)
+    model_stn = Model(inputs=image, outputs=aligned_image)
+
+    model = Sequential()
+    model.add(model_stn)
+    model.add(model_decoder)
+
+    return model
+
+
+def model_fn(mode, params, stn_module, reuse=False):
     """Model function defining the graph operations.
     Args:
         mode: (string) can be 'train' or 'eval'
         params: (Params) contains hyperparameters of the model (ex: `params.learning_rate`)
         reuse: (bool) whether to reuse the weights
         model: the NailNet model
+        stn_module: BilinearInterpolation from stn 
     Returns:
         model_spec: (dict) contains the graph operations or nodes needed for training / evaluation
     """
     is_training = (mode == 'train')
-    image_size = (params.image_size_w, params.image_size, 3)
+    image_size = (params.image_size_w, params.image_size_h, 3)
     # -----------------------------------------------------------
     # MODEL:
     # Compute the output distribution of the model and the predictions
-    model = buil_model(is_training, image_size, params)
+    model_decoder = buil_model(is_training, image_size, params)
+    model_final = buil_model_final(model_decoder, stn_module, image_size, params)
     print('[INFO] Final model is loaded ...')
     # TODO add Prediction: prediction = model(x, training=False)
     # Define loss and accuracy
@@ -115,7 +154,7 @@ def model_fn(mode, params, reuse=False):
     # Create the model specification and return it
     # It contains nodes or operations in the graph that will be used for training and evaluation
     model_spec = {}
-    model_spec['model'] = model
+    model_spec['model'] = model_final
     if is_training:
         model_spec['loss'] = loss_object
         model_spec['opt'] = opt

@@ -2,22 +2,22 @@
 import tensorflow as tf
 from model.utils.data_util import *
 
-def preprocess_data(image, force, size, use_random_flip, use_random_color, use_hsv):
+def preprocess_data(image, force, size_w, size_h, use_random_flip, use_random_color, use_hsv):
     """ preprocessing images """   
 
     image_string = tf.io.read_file(image)
-    image = load_image(image_string, size, use_hsv)
+    image = load_image(image_string, size_w, size_h, use_hsv)
     image = augment_image(image, use_random_flip, use_random_color)
 
     return image, force
 
 
-def load_image(image_string, size, use_hsv):
+def load_image(image_string, size_w, size_h, use_hsv):
     """ decoding the images """   
 
     image = tf.image.decode_jpeg(image_string, channels=3)
     image = tf.image.convert_image_dtype(image, tf.float32) 
-    image = tf.image.resize(image, [size, size]) 
+    image = tf.image.resize(image, [size_w, size_h]) 
     if use_hsv:
         image = tf.image.rgb_to_hsv(image)
 
@@ -52,8 +52,8 @@ def input_fn(is_training, filenames, labels, params = None):
     assert len(filenames) == len(labels), "Filenames and labels should have same length"
 
     # Create a Dataset serving batches of images and labels
-    preproc_train_fn = lambda f, l: preprocess_data(f, l, params.image_size, params.use_random_flip, params.use_random_color, params.use_hsv)
-    preproc_eval_fn = lambda f, l: preprocess_data(f, l, params.image_size, False, False, params.use_hsv)
+    preproc_train_fn = lambda f, l: preprocess_data(f, l, params.image_size_w, params.image_size_h, params.use_random_flip, params.use_random_color, params.use_hsv)
+    preproc_eval_fn = lambda f, l: preprocess_data(f, l, params.image_size_w, params.image_size_h, False, False, params.use_hsv)
 
     if is_training:
         dataset = (tf.data.Dataset.from_tensor_slices((filenames, labels))
