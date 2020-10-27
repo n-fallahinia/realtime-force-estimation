@@ -54,6 +54,12 @@ def buil_model(is_training, image_size, params, classes = 3):
     model.add(GlobalAveragePooling2D())
 
     # first FC layer with droupout
+    model.add(Dense(params.predic_layer_size, activation='relu'))
+
+    # second FC layer with droupout
+    model.add(Dense(params.predic_layer_size, activation='relu'))
+
+    # third FC layer with droupout
     model.add(Dense(params.predic_layer_size))
 
     if params.use_batch_norm:

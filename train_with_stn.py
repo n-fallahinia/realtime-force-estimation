@@ -6,11 +6,14 @@ Navid Fallahinia - 07/11/2020
 BioRobotics Lab
 """
 
-import argparse
+
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import tensorflow as tf
 import random
+import argparse
+import logging
 from packaging import version
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 from model.input_fn import *
 from model.model_align_fn import *
@@ -36,7 +39,7 @@ parser.add_argument('--stn_dir', default="./test/stn_model",
 parser.add_argument('--mode', default='train', 
                     help="train or test mode")
 
-parser.add_argument('--v', default=True,
+parser.add_argument('--v', default=False,
                     help ='verbose mode')
 
 if __name__ == '__main__':
@@ -46,6 +49,7 @@ if __name__ == '__main__':
     print("TensorFlow version: ", tf.__version__)
     assert version.parse(tf.__version__).release[0] >= 2, \
     "This notebook requires TensorFlow 2.0 or above."
+    tf.get_logger().setLevel(logging.ERROR)
 
     # ste the gpu (device:GPU:0) 
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
@@ -97,7 +101,7 @@ if __name__ == '__main__':
     print('[INFO] Dataset is built by {0} training images and {1} eval images '
             .format(len(images_list_train), len(images_list_eval)))
 
-    tf.debugging.set_log_device_placement(args.v)
+    tf.debugging.set_log_device_placement(False)
     train_dataset = input_fn(True, images_list_train, force_list_train, params= params)
     eval_dataset  = input_fn(False, images_list_eval, force_list_eval, params= params)
     print('[INFO] Data pipeline is built')
