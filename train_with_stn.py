@@ -6,7 +6,6 @@ Navid Fallahinia - 07/11/2020
 BioRobotics Lab
 """
 
-
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
@@ -58,6 +57,7 @@ if __name__ == '__main__':
       # Restrict TensorFlow to only use the first GPU
         try:
             tf.config.experimental.set_visible_devices(gpus[0], 'GPU')
+            tf.config.experimental.set_memory_growth(gpus[0], True)
             logical_gpus = tf.config.experimental.list_logical_devices('GPU')
             print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPU")
         except RuntimeError as e:
