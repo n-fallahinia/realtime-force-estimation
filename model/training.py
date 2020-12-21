@@ -33,7 +33,7 @@ class Train_and_Evaluate():
         self.test_loss = self.metrics['test_loss']
         self.test_accuracy = self.metrics['test_accuracy']
 
-    @tf.function
+    # @tf.function
     def train_step(self, x_train, y_train):
         """Train the model on batches
         Args:

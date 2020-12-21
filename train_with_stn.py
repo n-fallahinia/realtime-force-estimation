@@ -8,40 +8,31 @@ BioRobotics Lab
 
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-import tensorflow as tf
-import random
-import argparse
-import logging
-from packaging import version
 
 from model.input_fn import *
 from model.model_align_fn import *
 from model.training import *
 from model.utils.utils import Params
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--model_dir', default='./experiments',
-                    help="Experiment directory containing params.json")
+import tensorflow.compat.v2 as tf
+import random
+import logging
+from packaging import version
 
-parser.add_argument('--data_dir', default='./data_5',
-                    help="Directory containing the dataset")
+from absl import app
+from absl import flags
 
-parser.add_argument('--restore_from', default=None,
-                    help="Optional, directory or file containing weights to reload before training")
+FLAGS = flags.FLAGS
 
-parser.add_argument('--log_dir', default="./log",
-                    help="log directory for the trained model")
+flags.DEFINE_string('model_dir', './experiments', 'Path to experiment directory containing params.json.')
+flags.DEFINE_string('data_dir', './data_5', 'Path to directory containing the datase.')
+flags.DEFINE_string('restore_from', None, 'directory or file containing weights to reload before training.')
+flags.DEFINE_string('loging_dir', './log', 'log directory for the trained model.')
+flags.DEFINE_string('stn_dir', './test/stn_model', 'directory for the stn modoul.')
+flags.DEFINE_string('mode', 'train', 'train or test mode.')
+flags.DEFINE_boolean('verbose', False, 'verbose mode.')
 
-parser.add_argument('--stn_dir', default="./test/stn_model",
-                    help="log directory for the trained model")
-
-parser.add_argument('--mode', default='train', 
-                    help="train or test mode")
-
-parser.add_argument('--v', default=False,
-                    help ='verbose mode')
-
-if __name__ == '__main__':
+def main(unused_argv):
 
     # Set the random seed for the whole graph for reproductible experiments
     tf.random.set_seed(230)
@@ -49,6 +40,7 @@ if __name__ == '__main__':
     assert version.parse(tf.__version__).release[0] >= 2, \
     "This notebook requires TensorFlow 2.0 or above."
     tf.get_logger().setLevel(logging.ERROR)
+    # strategy = tf.compat.v2.distribute.MirroredStrategy()
 
     # ste the gpu (device:GPU:0) 
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
@@ -65,20 +57,19 @@ if __name__ == '__main__':
             print(e)
 
     # Load the parameters from json file
-    args = parser.parse_args()
-    json_path = os.path.join(args.model_dir, 'params.json')
+    json_path = os.path.join(FLAGS.model_dir, 'params.json')
     assert os.path.isfile(json_path), "No json configuration file found at {}".format(json_path)
     params = Params(json_path)
 
     # check if the data is available
-    assert os.path.exists(args.data_dir), "No data file found at {}".format(args.data_dir)
+    assert os.path.exists(FLAGS.data_dir), "No data file found at {}".format(FLAGS.data_dir)
 
     # check if the log file is available
-    if not os.path.exists(args.log_dir):
-        os.mkdir(args.log_dir)
+    if not os.path.exists(FLAGS.loging_dir):
+        os.mkdir(FLAGS.loging_dir)
 
-    train_data_dir = os.path.join(args.data_dir, 'train')
-    eval_data_dir = os.path.join(args.data_dir, 'eval')
+    train_data_dir = os.path.join(FLAGS.data_dir, 'train')
+    eval_data_dir = os.path.join(FLAGS.data_dir, 'eval')
 
     # Get the filenames from the train and dev sets
     train_filenames = [os.path.join(train_data_dir, f) for f in os.listdir(train_data_dir)]
@@ -109,13 +100,16 @@ if __name__ == '__main__':
     # Define the model
     print('=================================================')
     print('[INFO] Creating the model...')
-    stn_module = tf.keras.models.load_model(args.stn_dir)
-    model_spec = model_fn(args.mode, params, stn_module) 
-    if args.v:
+    stn_module = tf.keras.models.load_model(FLAGS.stn_dir)
+    model_spec = model_fn(FLAGS.mode, params, stn_module) 
+    if FLAGS.verbose:
         model_spec['model'].summary()
 
     # Train the model
     print('=================================================')
-    train_model = Train_and_Evaluate(model_spec, train_dataset, eval_dataset, args.log_dir)
+    train_model = Train_and_Evaluate(model_spec, train_dataset, eval_dataset, FLAGS.loging_dir)
     train_model.train_and_eval(params)
     print('=================================================')
+
+if __name__ == '__main__':
+    tf.compat.v1.app.run()
