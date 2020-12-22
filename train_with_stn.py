@@ -56,6 +56,10 @@ def main(unused_argv):
         # Visible devices must be set before GPUs have been initialized
             print(e)
 
+    flags.mark_flag_as_required('model_dir')
+    flags.mark_flag_as_required('data_dir')
+    flags.mark_flag_as_required('stn_dir')
+
     # Load the parameters from json file
     json_path = os.path.join(FLAGS.model_dir, 'params.json')
     assert os.path.isfile(json_path), "No json configuration file found at {}".format(json_path)
