@@ -125,7 +125,7 @@ class BilinearInterpolation(Layer):
     def _transform(self, X, affine_transformation, output_size):
         batch_size, num_channels = K.shape(X)[0], K.shape(X)[3]
         affine_transformation = K.reshape(affine_transformation, (1,6))
-        affine_transformation = K.repeat(affine_transformation, n=int(K.cast(batch_size, dtype='float64')))
+        affine_transformation = K.repeat(affine_transformation, n=K.cast(batch_size, dtype='int32'))
         transformations = K.reshape(affine_transformation,
                                     shape=(batch_size, 2, 3))
         # transformations = K.cast(affine_transformation[:, 0:2, :], 'float32')
